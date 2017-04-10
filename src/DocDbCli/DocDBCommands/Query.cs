@@ -4,11 +4,11 @@ using Mono.Options;
 using Newtonsoft.Json;
 using Serilog;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.Documents.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace DocDBCommands
 {
@@ -62,24 +62,31 @@ namespace DocDBCommands
         {
             DocumentClient client;
 
-            using (client = new DocumentClient(new Uri(_options.EndPoint), _options.AuthorizationKey, DefaultConnectionPolicy))
+            try
             {
-                var collection = GetCollectionIfExists(client, _options.DatabaseName, _options.DataCollectionName);
-                if (collection == null)
+                using (client = new DocumentClient(new Uri(_options.EndPoint), _options.AuthorizationKey, DefaultConnectionPolicy))
                 {
-                    throw new ArgumentException(string.Format("Database {0}, Collection {1} doesn't exist", _options.DatabaseName, _options.DataCollectionName));
-                }
+                    var collection = GetCollectionIfExists(client, _options.DatabaseName, _options.DataCollectionName);
+                    if (collection == null)
+                    {
+                        throw new ArgumentException(string.Format("Database {0}, Collection {1} doesn't exist", _options.DatabaseName, _options.DataCollectionName));
+                    }
 
-                var collectionUri = UriFactory.CreateDocumentCollectionUri(_options.DatabaseName, _options.DataCollectionName);
-
-                var result = client.CreateDocumentQuery(collectionUri, QueryText, DefaultFeedOptions);
-                foreach (var item in result.ToList())
-                {
-                    Console.WriteLine(JsonConvert.SerializeObject(item));
+                    var collectionUri = UriFactory.CreateDocumentCollectionUri(_options.DatabaseName, _options.DataCollectionName);
+                    var query = client.CreateDocumentQuery(collectionUri, QueryText, DefaultFeedOptions).AsDocumentQuery();
+                    while (query.HasMoreResults)
+                    {
+                        var result = await query.ExecuteNextAsync();
+                        if (_options.Verbose > 0)
+                            Console.WriteLine("RequestCharge: {0}", result.RequestCharge);
+                        Console.WriteLine(JsonConvert.SerializeObject(result.AsEnumerable()));
+                    }
                 }
             }
-
-            return;
+            catch (DocumentClientException e)
+            {
+                Log.Error(e, "DocumentClientException");
+            }
         }
     }
 }

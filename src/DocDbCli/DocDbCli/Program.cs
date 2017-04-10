@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Mono.Options;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using DocDBCommands;
-using System.Collections;
 using Serilog;
 
 namespace DocDbCli
 {
-
-
     class Program
     {
         private readonly CompositionContainer _container;
@@ -27,7 +22,7 @@ namespace DocDbCli
         {
             Log.Logger = new LoggerConfiguration()
               .MinimumLevel.Debug()
-              .WriteTo.LiterateConsole()
+              //.WriteTo.LiterateConsole()
               .WriteTo.RollingFile("logs\\{Date}.txt")
               .CreateLogger();
 
@@ -53,7 +48,7 @@ namespace DocDbCli
 
             var queue = new Queue<string>(args);
             var name = -queue.Count == 0 ? "help" : queue.Dequeue();
-            var cmd = _commands.Where(lazy => lazy.Metadata.Name == name).FirstOrDefault();
+            var cmd = _commands.FirstOrDefault(lazy => lazy.Metadata.Name == name);
             if (cmd != null)
             {
                 if (cmd.Value.Parse(queue.ToArray()))
@@ -65,7 +60,18 @@ namespace DocDbCli
 
         static void Main(string[] args)
         {
-            (new Program()).RunAsync(args).Wait();
+            try
+            {
+                (new Program()).RunAsync(args).Wait();
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "main");
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
     }
 }

@@ -7,7 +7,7 @@
     <ProjectGuid>{9E36479C-2355-4B61-9FFA-5A3ADDDC0279}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>DocDbCli</RootNamespace>
-    <AssemblyName>DocDbCli</AssemblyName>
+    <AssemblyName>docdb</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
