@@ -14,8 +14,7 @@ Usage
 Examples
 ========
 
-1. Start DocuementDB Emulator
-   Ref: `Use the Azure DocumentDB Emulator for development and testing <https://docs.microsoft.com/en-us/azure/documentdb/documentdb-nosql-local-emulator>`_
+1. Start DocuementDB Emulator. Ref: `Use the Azure DocumentDB Emulator for development and testing <https://docs.microsoft.com/en-us/azure/documentdb/documentdb-nosql-local-emulator>`_
 
 2. Create Database name 'db' and Create Collection name 'test'
 
@@ -36,6 +35,8 @@ Examples
 
 
 5. Query document in DocumentDB
+
+.. code-block:: posh
 
    .\docdb query -e "https://localhost:8081" -k "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==" -d db -c test -q "select * from c" | jq .
 
