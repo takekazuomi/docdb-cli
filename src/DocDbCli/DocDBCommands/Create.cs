@@ -4,7 +4,9 @@ using Mono.Options;
 using Newtonsoft.Json;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents.Linq;
@@ -13,19 +15,31 @@ using Newtonsoft.Json.Linq;
 namespace DocDBCommands
 {
     [Export(typeof(ICommand))]
-    [ExportMetadata("Name", "query")]
+    [ExportMetadata("Name", "create")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
-    public class Query : CommandBase, ICommand
+    public class Create : CommandBase, ICommand
     {
-        public string QueryText { get; set; }
+        private string _jsonText;
+        public string JsonText
+        {
+            set
+            {
+                if (value.Length > 0 && File.Exists(value))
+                    _jsonText = File.ReadAllText(value);
+                else
+                    _jsonText = value;
+            }
+            get { return _jsonText; }
+        }
 
         protected override void BeforeParse(OptionSet optionset)
         {
-            Log.Debug("Query.BeforeParse");
-            optionset.Add("q|query=", text => QueryText = text);
+            Log.Debug("Create.BeforeParse");
+            optionset.Add("j|json=", text => JsonText = text);
             base.BeforeParse(optionset);
         }
+
 
         public async Task RunAsync()
         {
@@ -41,19 +55,19 @@ namespace DocDBCommands
                     }
 
                     var collectionUri = UriFactory.CreateDocumentCollectionUri(_options.DatabaseName, _options.DataCollectionName);
-                    var query = client.CreateDocumentQuery(collectionUri, QueryText, DefaultFeedOptions).AsDocumentQuery();
-                    while (query.HasMoreResults)
+                    // TODO Why cannot use json string direct?
+                    var newDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonText);
+                    var response = await client.CreateDocumentAsync(collectionUri, newDictionary, new RequestOptions());
+                    if (_options.Verbose > 0)
                     {
-                        var result = await query.ExecuteNextAsync();
-                        if (_options.Verbose > 0)
-                            Console.WriteLine("RequestCharge: {0}", result.RequestCharge);
-                        Console.WriteLine(JsonConvert.SerializeObject(result.AsEnumerable()));
+                        Console.WriteLine("RequestCharge: {0}", response.RequestCharge);
+                        Console.WriteLine(response.Resource);
                     }
                 }
             }
             catch (DocumentClientException e)
             {
-                Console.Error.WriteLine("query error: {0}", e.Message);
+                Console.Error.WriteLine("create error: {0}", e.Message);
                 Log.Error(e, "DocumentClientException");
             }
         }

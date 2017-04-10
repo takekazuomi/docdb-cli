@@ -59,6 +59,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CommandBase.cs" />
     <Compile Include="Help.cs" />
+    <Compile Include="Create.cs" />
     <Compile Include="Query.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,10 +1,12 @@
-﻿using Mono.Options;
+﻿using Microsoft.Azure.Documents.Client;
+using Mono.Options;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.Documents;
 
 namespace DocDBCommands
 {
@@ -51,5 +53,37 @@ namespace DocDBCommands
         {
             optionSet.WriteOptionDescriptions(Console.Out);
         }
+
+        protected static readonly FeedOptions DefaultFeedOptions = new FeedOptions
+        {
+            EnableCrossPartitionQuery = true
+        };
+
+        protected static readonly ConnectionPolicy DefaultConnectionPolicy = new ConnectionPolicy
+        {
+            ConnectionMode = ConnectionMode.Gateway,
+            ConnectionProtocol = Protocol.Https
+        };
+
+        protected Database GetDatabaseIfExists(DocumentClient client, string databaseName)
+        {
+            return client.CreateDatabaseQuery().Where(d => d.Id == databaseName).AsEnumerable().FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Get the collection if it exists, null if it doesn't
+        /// </summary>
+        /// <returns>The requested collection</returns>
+        protected DocumentCollection GetCollectionIfExists(DocumentClient client, string databaseName, string collectionName)
+        {
+            if (GetDatabaseIfExists(client, databaseName) == null)
+            {
+                return null;
+            }
+
+            return client.CreateDocumentCollectionQuery(UriFactory.CreateDatabaseUri(databaseName)).Where(c => c.Id == collectionName).AsEnumerable().FirstOrDefault();
+        }
+
     }
+
 }
