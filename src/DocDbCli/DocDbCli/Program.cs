@@ -4,37 +4,64 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Mono.Options;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
+using DocDBCommands;
+using System.Collections;
+using Serilog;
 
 namespace DocDbCli
 {
-    class Options
-    {
-        public string ConnectionString { get; set; }
-        public int Verbose { get; set; }
-        public  bool Help { get; set; }
-        public string DatabaseName { get; set; }
 
-        public string DataCollectionName { get; set; }
-    }
 
     class Program
     {
-        readonly Options _options = new Options();
+        private readonly CompositionContainer _container;
+
+        [ImportMany]
+#pragma warning disable 649
+        private IEnumerable<Lazy<ICommand, ICommandName>> _commands;
+#pragma warning restore 649
+
+        private Program()
+        {
+            Log.Logger = new LoggerConfiguration()
+              .MinimumLevel.Debug()
+              .WriteTo.LiterateConsole()
+              .WriteTo.RollingFile("logs\\{Date}.txt")
+              .CreateLogger();
+
+            var catalog = new AggregateCatalog();
+            var directoryCatalog = new DirectoryCatalog(".", "DocDB*.dll");
+
+            catalog.Catalogs.Add(directoryCatalog);
+
+            _container = new CompositionContainer(catalog);
+
+            try
+            {
+                _container.ComposeParts(this);
+            }
+            catch (CompositionException compositionException)
+            {
+                Log.Error(compositionException, "MEF Composition Error");
+            }
+        }
 
         async Task RunAsync(string[] args)
         {
-            bool help = false;
-            var p = new OptionSet()
-            {
-                {"c|ConnectionString=", v => _options.ConnectionString = v},
-                {"d|DatabaseName=", v => _options.DatabaseName = v},
-                {"n|DataCollectionName=", v => _options.DataCollectionName = v},
-                {"v|verbose", v => ++_options.Verbose},
-                {"h|?|help", v => _options.Help = v != null},
-            };
-            var extra = p.Parse(args);
-        }
 
+            var queue = new Queue<string>(args);
+            var name = -queue.Count == 0 ? "help" : queue.Dequeue();
+            var cmd = _commands.Where(lazy => lazy.Metadata.Name == name).FirstOrDefault();
+            if (cmd != null)
+            {
+                if (cmd.Value.Parse(queue.ToArray()))
+                    await cmd.Value.RunAsync();
+                else
+                    cmd.Value.PrintHelp();
+            }
+        }
 
         static void Main(string[] args)
         {
