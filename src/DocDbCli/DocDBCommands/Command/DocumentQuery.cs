@@ -31,7 +31,7 @@ namespace DocDB.Command
     [ExportMetadata("Verb", "query")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
-    public class Query : CommandBase, ICommand
+    public class DocumentQuery : CommandBase, ICommand
     {
         public string QueryText { get; set; }
 

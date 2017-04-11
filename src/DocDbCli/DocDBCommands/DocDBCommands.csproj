@@ -55,14 +55,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Command\CollectionCreate.cs" />
     <Compile Include="Command\Connect.cs" />
+    <Compile Include="Command\CollectionList.cs" />
     <Compile Include="Context.cs" />
     <Compile Include="ICommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Command\CommandBase.cs" />
     <Compile Include="Command\Help.cs" />
-    <Compile Include="Command\Create.cs" />
-    <Compile Include="Command\Query.cs" />
+    <Compile Include="Command\DocumentCreate.cs" />
+    <Compile Include="Command\DocumentQuery.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\DocDbCli.licenseheader">
