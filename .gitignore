@@ -263,3 +263,4 @@ __pycache__/
 tmp/
 logs/
 *.etl.zip
+*.licenseheader

@@ -65,6 +65,9 @@
     <Compile Include="Command\Query.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\DocDbCli.licenseheader">
+      <Link>DocDbCli.licenseheader</Link>
+    </None>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
