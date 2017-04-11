@@ -7,7 +7,7 @@
     <ProjectGuid>{3D4C956D-A85D-410F-9712-C1B725718FCA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DocDBCommands</RootNamespace>
+    <RootNamespace>DocDB</RootNamespace>
     <AssemblyName>DocDBCommands</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -55,12 +55,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Command\Connect.cs" />
+    <Compile Include="Context.cs" />
     <Compile Include="ICommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="CommandBase.cs" />
-    <Compile Include="Help.cs" />
-    <Compile Include="Create.cs" />
-    <Compile Include="Query.cs" />
+    <Compile Include="Command\CommandBase.cs" />
+    <Compile Include="Command\Help.cs" />
+    <Compile Include="Command\Create.cs" />
+    <Compile Include="Command\Query.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

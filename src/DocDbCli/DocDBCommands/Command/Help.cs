@@ -2,7 +2,7 @@
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 
-namespace DocDBCommands
+namespace DocDB.Command
 {
     [Export(typeof(ICommand))]
     [ExportMetadata("Name", "help")]

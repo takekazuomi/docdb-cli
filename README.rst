@@ -7,8 +7,9 @@ Usage
 
 .. code-block:: posh
 
-   .\docdb create -e END_POINT_URI -k ACCESS_KEY -d DATABASE_NAME -c COLLECTION_NAME -j JSON_FILE
-   .\docdb query -e END_POINT_URI -k ACCESS_KEY -d DATABASE_NAME -c COLLECTION_NAME-q SQL_QUERY
+   .\docdb connet -e END_POINT_URI -k ACCESS_KEY -d DATABASE_NAME -c COLLECTION_NAME
+   .\docdb create -j JSON_FILE
+   .\docdb query -q SQL_QUERY
 
 
 Examples
@@ -27,20 +28,29 @@ Examples
       "id": "KinmugiFamily"
    }
 
-4. Create document in DocumentDB
+4. Connect DocumentDB.
 
 .. code-block:: posh
 
-   .\docdb create -e EndPointUri -k "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==" -d db -c test -j f.json -v
+   .\docdb connect -e "https://localhost:8081" -k "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==" -d db -c test
+
+
+5. Create document in DocumentDB
+
+.. code-block:: posh
+
+   .\docdb create -j f.json -v
 
 
 5. Query document in DocumentDB
 
 .. code-block:: posh
 
-   .\docdb query -e "https://localhost:8081" -k "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==" -d db -c test -q "select * from c" | jq .
+   .\docdb query -q "select * from c" | jq .
 
 
 Note
 ====
-Current version support create docuemnt and query dcuments only.
+
+* Current version support create docuemnt and query dcuments only.
+* Access key stored in ~/.docdbcli file take care.

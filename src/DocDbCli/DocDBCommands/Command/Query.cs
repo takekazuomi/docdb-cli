@@ -1,16 +1,15 @@
-﻿using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
-using Mono.Options;
-using Newtonsoft.Json;
-using Serilog;
-using System;
+﻿using System;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Azure.Documents;
+using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
-using Newtonsoft.Json.Linq;
+using Mono.Options;
+using Newtonsoft.Json;
+using Serilog;
 
-namespace DocDBCommands
+namespace DocDB.Command
 {
     [Export(typeof(ICommand))]
     [ExportMetadata("Name", "query")]
@@ -32,20 +31,20 @@ namespace DocDBCommands
             try
             {
                 DocumentClient client;
-                using (client = new DocumentClient(new Uri(_options.EndPoint), _options.AuthorizationKey, DefaultConnectionPolicy))
+                using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
                 {
-                    var collection = GetCollectionIfExists(client, _options.DatabaseName, _options.DataCollectionName);
+                    var collection = GetCollectionIfExists(client, Context.DatabaseName, Context.DataCollectionName);
                     if (collection == null)
                     {
-                        throw new ArgumentException(string.Format("Database {0}, Collection {1} doesn't exist", _options.DatabaseName, _options.DataCollectionName));
+                        throw new ArgumentException(string.Format("Database {0}, Collection {1} doesn't exist", Context.DatabaseName, Context.DataCollectionName));
                     }
 
-                    var collectionUri = UriFactory.CreateDocumentCollectionUri(_options.DatabaseName, _options.DataCollectionName);
-                    var query = client.CreateDocumentQuery(collectionUri, QueryText, DefaultFeedOptions).AsDocumentQuery();
+                    var collectionUri = UriFactory.CreateDocumentCollectionUri(Context.DatabaseName, Context.DataCollectionName);
+                    var query = client.CreateDocumentQuery(collectionUri, QueryText, Context.FeedOptions).AsDocumentQuery();
                     while (query.HasMoreResults)
                     {
                         var result = await query.ExecuteNextAsync();
-                        if (_options.Verbose > 0)
+                        if (Context.Verbose > 0)
                             Console.WriteLine("RequestCharge: {0}", result.RequestCharge);
                         Console.WriteLine(JsonConvert.SerializeObject(result.AsEnumerable()));
                     }

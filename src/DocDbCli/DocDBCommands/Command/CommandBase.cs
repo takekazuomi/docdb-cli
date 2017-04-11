@@ -1,28 +1,21 @@
-﻿using Microsoft.Azure.Documents.Client;
-using Mono.Options;
-using Serilog;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents;
+using Microsoft.Azure.Documents.Client;
+using Mono.Options;
+using Serilog;
 
-namespace DocDBCommands
+namespace DocDB.Command
 {
-    public class Options
-    {
-        public string EndPoint { get; set; }
-        public string AuthorizationKey { get; set; }
-        public int Verbose { get; set; }
-        public bool Help { get; set; }
-        public string DatabaseName { get; set; }
 
-        public string DataCollectionName { get; set; }
-    }
     public class CommandBase
     {
-        protected readonly Options _options = new Options();
+        protected Context _context; 
+        public Context Context {
+            get { return _context; }
+        }
         protected List<string> extra;
         protected static Task DoneTask { get; } = Task.FromResult(true);
 
@@ -31,18 +24,25 @@ namespace DocDBCommands
         public bool Parse(string[] args)
         {
             bool help = false;
+
+            string profile=null;
+            var context = new Context();
             optionSet = new OptionSet()
             {
-                {"e|EndPoint=", v => _options.EndPoint = v},
-                {"k|AuthorizationKey=", v => _options.AuthorizationKey = v},
-                {"d|DatabaseName=", v => _options.DatabaseName = v},
-                {"c|DataCollectionName=", v => _options.DataCollectionName = v},
-                {"v|verbose", v => ++_options.Verbose},
-                {"h|?|help", v => _options.Help = v != null},
+                {"e|EndPoint=", v => context.EndPoint = v},
+                {"k|AuthorizationKey=", v => context.AuthorizationKey = v},
+                {"d|DatabaseName=", v => context.DatabaseName = v},
+                {"c|DataCollectionName=", v => context.DataCollectionName = v},
+                {"v|verbose", v => ++context.Verbose},
+                {"p|profile", v => profile=v},
+                {"h|?|help", v => context.Help = v != null},
             };
             // call back here
             BeforeParse(optionSet);
             extra = optionSet.Parse(args);
+            _context = Context.ReadFromFile(profile);
+            _context.Apply(context);
+
             return !help;
         }
         protected virtual void BeforeParse(OptionSet optionset) {
@@ -54,17 +54,7 @@ namespace DocDBCommands
             optionSet.WriteOptionDescriptions(Console.Out);
         }
 
-        protected static readonly FeedOptions DefaultFeedOptions = new FeedOptions
-        {
-            EnableCrossPartitionQuery = true
-        };
-
-        protected static readonly ConnectionPolicy DefaultConnectionPolicy = new ConnectionPolicy
-        {
-            ConnectionMode = ConnectionMode.Gateway,
-            ConnectionProtocol = Protocol.Https
-        };
-
+ 
         protected Database GetDatabaseIfExists(DocumentClient client, string databaseName)
         {
             return client.CreateDatabaseQuery().Where(d => d.Id == databaseName).AsEnumerable().FirstOrDefault();

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
-using DocDBCommands;
+using DocDB;
 using Serilog;
 
 namespace DocDbCli
@@ -66,6 +66,7 @@ namespace DocDbCli
             }
             catch (Exception e)
             {
+                Console.Error.WriteLine("Error: {0}", e.Message);
                 Log.Error(e, "main");
             }
             finally
