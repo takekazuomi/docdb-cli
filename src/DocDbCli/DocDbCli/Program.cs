@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using DocDB;
 using Serilog;
+using Serilog.Events;
 
 namespace DocDbCli
 {
@@ -30,7 +31,7 @@ namespace DocDbCli
 
         [ImportMany]
 #pragma warning disable 649
-        private IEnumerable<Lazy<ICommand, ICommandName>> _commands;
+        private IEnumerable<Lazy<ICommand, ICommandMetadata>> _commands;
 #pragma warning restore 649
 
         private Program()
@@ -51,6 +52,11 @@ namespace DocDbCli
             try
             {
                 _container.ComposeParts(this);
+                if (Log.IsEnabled(LogEventLevel.Debug))
+                {
+                    var msg = _commands.ToList().Select(lazy => string.Format("Name:{0}, Verb:{1}", lazy.Metadata.Name, lazy.Metadata.Verb)).ToArray();
+                    Log.Debug("dump commands {0}", string.Join(", ", msg));
+                }
             }
             catch (CompositionException compositionException)
             {
@@ -60,10 +66,12 @@ namespace DocDbCli
 
         async Task RunAsync(string[] args)
         {
-
+            // TODO fix here
             var queue = new Queue<string>(args);
             var name = -queue.Count == 0 ? "help" : queue.Dequeue();
-            var cmd = _commands.FirstOrDefault(lazy => lazy.Metadata.Name == name);
+            var verb = -queue.Count == 0 ? "nop" : (queue.Peek().StartsWith("-") ? "nop" : queue.Dequeue());
+
+            var cmd = _commands.FirstOrDefault(lazy => lazy.Metadata.Name == name && lazy.Metadata.Verb == verb);
             if (cmd != null)
             {
                 if (cmd.Value.Parse(queue.ToArray()))

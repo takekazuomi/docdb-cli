@@ -27,7 +27,8 @@ using Serilog;
 namespace DocDB.Command
 {
     [Export(typeof(ICommand))]
-    [ExportMetadata("Name", "create")]
+    [ExportMetadata("Name", "document")]
+    [ExportMetadata("Verb", "create")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
     public class Create : CommandBase, ICommand

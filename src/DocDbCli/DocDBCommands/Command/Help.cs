@@ -21,6 +21,7 @@ namespace DocDB.Command
 {
     [Export(typeof(ICommand))]
     [ExportMetadata("Name", "help")]
+    [ExportMetadata("Verb", "nop")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
     public class Help : CommandBase, ICommand

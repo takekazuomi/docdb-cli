@@ -8,8 +8,8 @@ Usage
 .. code-block:: posh
 
    .\docdb connet -e END_POINT_URI -k ACCESS_KEY -d DATABASE_NAME -c COLLECTION_NAME
-   .\docdb create -j JSON_FILE
-   .\docdb query -q SQL_QUERY
+   .\docdb document create -j JSON_FILE
+   .\docdb document query -q SQL_QUERY
 
 
 Examples
@@ -39,14 +39,14 @@ Examples
 
 .. code-block:: posh
 
-   .\docdb create -j f.json -v
+   .\docdb document create -j f.json -v
 
 
 5. Query document in DocumentDB
 
 .. code-block:: posh
 
-   .\docdb query -q "select * from c" | jq .
+   .\docdb document query -q "select * from c" | jq .
 
 
 Note

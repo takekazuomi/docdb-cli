@@ -24,8 +24,9 @@ namespace DocDB
 
         void PrintHelp();
     }
-    public interface ICommandName
+    public interface ICommandMetadata
     {
         string Name { get; }
+        string Verb{ get; }
     }
 }

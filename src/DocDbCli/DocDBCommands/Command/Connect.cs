@@ -24,6 +24,7 @@ namespace DocDB.Command
 {
     [Export(typeof(ICommand))]
     [ExportMetadata("Name", "connect")]
+    [ExportMetadata("Verb", "nop")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
     public class Connect : CommandBase, ICommand
