@@ -14,15 +14,9 @@
  * limitations under the License.
  */
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
-using Mono.Options;
-using Newtonsoft.Json;
 using Serilog;
 
 namespace DocDB.Command
@@ -34,32 +28,24 @@ namespace DocDB.Command
 
     public class CollectionList : CommandBase, ICommand
     {
- 
+
         public async Task RunAsync()
         {
-            try
+            DocumentClient client;
+            using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
             {
-                DocumentClient client;
-                using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
+                if (GetDatabaseIfExists(client, Context.DatabaseName) != null)
                 {
-                    if (GetDatabaseIfExists(client, Context.DatabaseName) != null)
+                    var collection = client.CreateDocumentCollectionQuery(UriFactory.CreateDatabaseUri(Context.DatabaseName), Context.FeedOptions);
+                    foreach (var documentCollection in collection)
                     {
-                        var collection = client.CreateDocumentCollectionQuery(UriFactory.CreateDatabaseUri(Context.DatabaseName), Context.FeedOptions);
-                        foreach (var documentCollection in collection)
-                        {
-                            Console.WriteLine("Id:{0}, ResourceId:{1}", documentCollection.Id, documentCollection.ResourceId, documentCollection.ConflictsLink);
-                        }
-                    }
-                    else
-                    {
-                        Log.Warning("Not exist Database:{0}, Collection:{1}", Context.DatabaseName, Context.DataCollectionName);
+                        Console.WriteLine("Id:{0}, ResourceId:{1}", documentCollection.Id, documentCollection.ResourceId, documentCollection.ConflictsLink);
                     }
                 }
-            }
-            catch (DocumentClientException e)
-            {
-                Console.Error.WriteLine("collection list error: {0}", e.Message);
-                Log.Error(e, "DocumentClientException");
+                else
+                {
+                    Log.Warning("Not exist Database:{0}, Collection:{1}", Context.DatabaseName, Context.DataCollectionName);
+                }
             }
         }
     }

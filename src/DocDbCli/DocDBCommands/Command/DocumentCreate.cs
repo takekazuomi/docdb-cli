@@ -18,7 +18,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Mono.Options;
 using Newtonsoft.Json;
@@ -34,6 +33,7 @@ namespace DocDB.Command
     public class DocumentCreate : CommandBase, ICommand
     {
         private string _jsonText;
+
         public string JsonText
         {
             set
@@ -56,32 +56,29 @@ namespace DocDB.Command
 
         public async Task RunAsync()
         {
-            try
+            DocumentClient client;
+            using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
             {
-                DocumentClient client;
-                using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
+                var collection = GetCollectionIfExists(client, Context.DatabaseName, Context.DataCollectionName);
+                if (collection == null)
                 {
-                    var collection = GetCollectionIfExists(client, Context.DatabaseName, Context.DataCollectionName);
-                    if (collection == null)
-                    {
-                        throw new ArgumentException(string.Format("Database {0}, Collection {1} doesn't exist", Context.DatabaseName, Context.DataCollectionName));
-                    }
-
-                    var collectionUri = UriFactory.CreateDocumentCollectionUri(Context.DatabaseName, Context.DataCollectionName);
-                    // TODO Why cannot use json string direct?
-                    var newDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonText);
-                    var response = await client.CreateDocumentAsync(collectionUri, newDictionary, new RequestOptions());
-                    if (Context.Verbose > 0)
-                    {
-                        Console.WriteLine("RequestCharge: {0}", response.RequestCharge);
-                        Console.WriteLine(response.Resource);
-                    }
+                    throw new ArgumentException(string.Format("Database {0}, Collection {1} doesn't exist", Context.DatabaseName, Context.DataCollectionName));
                 }
-            }
-            catch (DocumentClientException e)
-            {
-                Console.Error.WriteLine("create error: {0}", e.Message);
-                Log.Error(e, "DocumentClientException");
+
+                var collectionUri = UriFactory.CreateDocumentCollectionUri(Context.DatabaseName, Context.DataCollectionName);
+                // TODO Why cannot use json string direct?
+                var newDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonText);
+                var result = await client.CreateDocumentAsync(collectionUri, newDictionary, new RequestOptions());
+                if (Context.Verbose > 0)
+                {
+                    Console.WriteLine("RequestCharge: {0}", result.RequestCharge);
+                    Console.WriteLine(result.Resource);
+                }
+                if (Context.Verbose > 1)
+                {
+                    var msg = result.ResponseHeaders.ToJoinedString("\n\t", " : ");
+                    Console.WriteLine("ResponseHeaders:\n\t{0}", msg);
+                }
             }
         }
     }

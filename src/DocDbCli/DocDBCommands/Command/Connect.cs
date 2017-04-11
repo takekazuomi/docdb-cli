@@ -16,9 +16,7 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
-using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
-using Serilog;
 
 namespace DocDB.Command
 {
@@ -29,24 +27,15 @@ namespace DocDB.Command
 
     public class Connect : CommandBase, ICommand
     {
-        public string QueryText { get; set; }
-
         public async Task RunAsync()
         {
-            try
+            DocumentClient client;
+            using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
             {
-                DocumentClient client;
-                using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
-                {
-                    await client.OpenAsync();
-                    Context.WriteToFile();
-                }
-            }
-            catch (DocumentClientException e)
-            {
-                Console.Error.WriteLine("connect error: {0}", e.Message);
-                Log.Error(e, "DocumentClientException");
+                await client.OpenAsync();
+                Context.WriteToFile();
             }
         }
     }
 }
+

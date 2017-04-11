@@ -10,6 +10,8 @@ Usage
    .\docdb connet -e END_POINT_URI -k ACCESS_KEY -d DATABASE_NAME -c COLLECTION_NAME
    .\docdb document create -j JSON_FILE
    .\docdb document query -q SQL_QUERY
+   .\docdb collection list
+   .\docdb collection create -c COLLECTION_NAME
 
 
 Examples
@@ -54,3 +56,4 @@ Note
 
 * Current version support create docuemnt and query dcuments only.
 * Access key stored in ~/.docdbcli file take care.
+* Help is broken

@@ -87,6 +87,11 @@ namespace DocDbCli
             {
                 (new Program()).RunAsync(args).Wait();
             }
+            catch (AggregateException ae)
+            {
+                foreach (var e in ae.Flatten().InnerExceptions)
+                    Console.Error.WriteLine("Error: {0}", e.Message);
+            }
             catch (Exception e)
             {
                 Console.Error.WriteLine("Error: {0}", e.Message);

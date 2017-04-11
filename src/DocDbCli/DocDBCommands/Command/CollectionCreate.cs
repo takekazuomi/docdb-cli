@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Mono.Options;
-using Newtonsoft.Json;
 using Serilog;
 
 namespace DocDB.Command
@@ -34,32 +30,47 @@ namespace DocDB.Command
 
     public class CollectionCreate : CommandBase, ICommand
     {
- 
+        public string PartitionKey { get; set; }
+        public int? CollectionThroughput { get; set; }
+
+        protected override void BeforeParse(OptionSet optionset)
+        {
+            optionset.Add("p|partitionKey=", v => PartitionKey = v);
+            optionset.Add("t|throughput=", v => CollectionThroughput = Int32.Parse(v));
+            base.BeforeParse(optionset);
+        }
+
+        protected override void CheckRequiredOption(Context contextBefore, Context contextAfter)
+        {
+            if (string.IsNullOrEmpty(contextBefore.DataCollectionName))
+            {
+                var msg = "Missing required option -c=CollectionName";
+                throw new InvalidOperationException(msg);
+            }
+        }
+
         public async Task RunAsync()
         {
-            try
+            DocumentClient client;
+            using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
             {
-                DocumentClient client;
-                using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
+                if (GetDatabaseIfExists(client, Context.DatabaseName) != null)
                 {
-                    if (GetDatabaseIfExists(client, Context.DatabaseName) != null)
+                    var result = await client.CreateDocumentCollectionAsync(
+                        UriFactory.CreateDatabaseUri(Context.DatabaseName),
+                        new DocumentCollection {Id = Context.DataCollectionName},
+                        new RequestOptions {OfferThroughput = CollectionThroughput});
+                    if (Context.Verbose > 1)
                     {
-                        var collection = client.CreateDocumentCollectionQuery(UriFactory.CreateDatabaseUri(Context.DatabaseName), Context.FeedOptions);
-                        foreach (var documentCollection in collection)
-                        {
-                            Console.WriteLine("Id:{0}, ResourceId:{1}", documentCollection.Id, documentCollection.ResourceId, documentCollection.ConflictsLink);
-                        }
-                    }
-                    else
-                    {
-                        Log.Warning("Not exist Database:{0}, Collection:{1}", Context.DatabaseName, Context.DataCollectionName);
+                        var msg = result.ResponseHeaders.ToJoinedString("\n\t", " : ");
+                        Console.WriteLine("ResponseHeaders:\n\t{0}", msg);
                     }
                 }
-            }
-            catch (DocumentClientException e)
-            {
-                Console.Error.WriteLine("collection list error: {0}", e.Message);
-                Log.Error(e, "DocumentClientException");
+                else
+                {
+                    Console.Error.WriteLine("Not exist Database:{0}", Context.DatabaseName);
+                    Log.Error("Not exist Database:{0}", Context.DatabaseName);
+                }
             }
         }
     }

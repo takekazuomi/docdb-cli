@@ -20,7 +20,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Mono.Options;
-using Serilog;
 
 namespace DocDB.Command
 {
@@ -49,7 +48,7 @@ namespace DocDB.Command
                 {"d|DatabaseName=", v => context.DatabaseName = v},
                 {"c|DataCollectionName=", v => context.DataCollectionName = v},
                 {"v|verbose", v => ++context.Verbose},
-                {"p|profile", v => profile=v},
+                {"F|profile", v => profile=v},
                 {"h|?|help", v => context.Help = v != null},
             };
             // call back here
@@ -58,10 +57,15 @@ namespace DocDB.Command
             _context = Context.ReadFromFile(profile);
             _context.Apply(context);
 
+            CheckRequiredOption(context, _context);
+
             return !help;
         }
-        protected virtual void BeforeParse(OptionSet optionset) {
-            Log.Debug("CommandBase.BeforeParse");
+        protected virtual void BeforeParse(OptionSet optionset)
+        {
+        }
+        protected virtual void CheckRequiredOption(Context contextBefore, Context contextAfter)
+        {
         }
 
         public void PrintHelp()

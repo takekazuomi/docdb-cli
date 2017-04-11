@@ -17,7 +17,6 @@ using System;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
 using Mono.Options;
@@ -44,33 +43,31 @@ namespace DocDB.Command
 
         public async Task RunAsync()
         {
-            try
+            DocumentClient client;
+            using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
             {
-                DocumentClient client;
-                using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
+                var collection = GetCollectionIfExists(client, Context.DatabaseName, Context.DataCollectionName);
+                if (collection == null)
                 {
-                    var collection = GetCollectionIfExists(client, Context.DatabaseName, Context.DataCollectionName);
-                    if (collection == null)
-                    {
-                        throw new ArgumentException(string.Format("Database {0}, Collection {1} doesn't exist", Context.DatabaseName, Context.DataCollectionName));
-                    }
-
-                    var collectionUri = UriFactory.CreateDocumentCollectionUri(Context.DatabaseName, Context.DataCollectionName);
-                    var query = client.CreateDocumentQuery(collectionUri, QueryText, Context.FeedOptions).AsDocumentQuery();
-                    while (query.HasMoreResults)
-                    {
-                        var result = await query.ExecuteNextAsync();
-                        if (Context.Verbose > 0)
-                            Console.WriteLine("RequestCharge: {0}", result.RequestCharge);
-                        Console.WriteLine(JsonConvert.SerializeObject(result.AsEnumerable()));
-                    }
+                    throw new ArgumentException(string.Format("Database {0}, Collection {1} doesn't exist", Context.DatabaseName, Context.DataCollectionName));
                 }
-            }
-            catch (DocumentClientException e)
-            {
-                Console.Error.WriteLine("query error: {0}", e.Message);
-                Log.Error(e, "DocumentClientException");
+
+                var collectionUri = UriFactory.CreateDocumentCollectionUri(Context.DatabaseName, Context.DataCollectionName);
+                var query = client.CreateDocumentQuery(collectionUri, QueryText, Context.FeedOptions).AsDocumentQuery();
+                while (query.HasMoreResults)
+                {
+                    var result = await query.ExecuteNextAsync();
+                    if (Context.Verbose > 0)
+                        Console.WriteLine("RequestCharge: {0}", result.RequestCharge);
+                    if (Context.Verbose > 1)
+                    {
+                        var msg = result.ResponseHeaders.ToJoinedString("\n\t", " : ");
+                        Console.WriteLine("ResponseHeaders:\n\t{0}", msg);
+                    }
+                    Console.WriteLine(JsonConvert.SerializeObject(result.AsEnumerable()));
+                }
             }
         }
     }
 }
+
