@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
@@ -40,7 +41,16 @@ namespace DocDB.Command
             optionset.Add("q|query=", text => QueryText = text);
             base.BeforeParse(optionset);
         }
+        protected override void CheckRequiredOption(Context contextBefore, Context contextAfter)
+        {
+            var msgs = new List<string>();
 
+            if (string.IsNullOrEmpty(QueryText))
+                msgs.Add("-q=query");
+
+            if (msgs.Count > 0)
+                throw new InvalidOperationException("Missing required option " + string.Join(", ", msgs));
+        }
         public async Task RunAsync()
         {
             DocumentClient client;

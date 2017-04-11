@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents.Client;
@@ -28,7 +29,6 @@ namespace DocDB.Command
 
     public class CollectionList : CommandBase, ICommand
     {
-
         public async Task RunAsync()
         {
             DocumentClient client;

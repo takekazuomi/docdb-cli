@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents.Client;
 
@@ -27,6 +29,20 @@ namespace DocDB.Command
 
     public class Connect : CommandBase, ICommand
     {
+        protected override void CheckRequiredOption(Context contextBefore, Context contextAfter)
+        {
+            var msgs = new List<string>();
+
+            if (string.IsNullOrEmpty(contextBefore.EndPoint))
+                msgs.Add("-e=EndPoint");
+
+            if (string.IsNullOrEmpty(contextBefore.AuthorizationKey))
+                msgs.Add("-k=AccessKey");
+
+            if (msgs.Count > 0)
+                throw new InvalidOperationException("Missing required option " + string.Join(", ", msgs));
+        }
+
         public async Task RunAsync()
         {
             DocumentClient client;
