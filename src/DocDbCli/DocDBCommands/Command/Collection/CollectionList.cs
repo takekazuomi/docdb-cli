@@ -36,10 +36,11 @@ namespace DocDB.Command
             {
                 if (GetDatabaseIfExists(client, Context.DatabaseName) != null)
                 {
-                    var collection = client.CreateDocumentCollectionQuery(UriFactory.CreateDatabaseUri(Context.DatabaseName), Context.FeedOptions);
+                   var databaseLink = UriFactory.CreateDatabaseUri(Context.DatabaseName);
+                    var collection = client.CreateDocumentCollectionQuery(databaseLink, Context.FeedOptions);
                     foreach (var documentCollection in collection)
                     {
-                        Console.WriteLine("Id:{0}, ResourceId:{1}", documentCollection.Id, documentCollection.ResourceId, documentCollection.ConflictsLink);
+                        Console.WriteLine("Id:{0}, ResourceId:{1}, ConflictsLink:{2}", documentCollection.Id, documentCollection.ResourceId, documentCollection.ConflictsLink);
                     }
                 }
                 else

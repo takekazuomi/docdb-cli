@@ -26,14 +26,16 @@ namespace DocDB.Command
 
     public class CommandBase
     {
-        protected Context _context; 
-        public Context Context {
+        protected Context _context;
+        protected Context Context {
             get { return _context; }
         }
-        protected List<string> extra;
+
+        protected List<string> Extra { get; set; }
+
         protected static Task DoneTask { get; } = Task.FromResult(true);
 
-        private OptionSet optionSet;
+        private OptionSet _optionSet;
 
         public bool Parse(string[] args)
         {
@@ -41,7 +43,7 @@ namespace DocDB.Command
 
             string profile=null;
             var context = new Context();
-            optionSet = new OptionSet()
+            _optionSet = new OptionSet()
             {
                 {"e|EndPoint=", v => context.EndPoint = v},
                 {"k|AuthorizationKey=", v => context.AuthorizationKey = v},
@@ -49,11 +51,12 @@ namespace DocDB.Command
                 {"c|DataCollectionName=", v => context.DataCollectionName = v},
                 {"v|verbose", v => ++context.Verbose},
                 {"F|profile", v => profile=v},
-                {"h|?|help", v => context.Help = v != null},
+                {"h|?|help", v => help = v != null},
             };
+
             // call back here
-            BeforeParse(optionSet);
-            extra = optionSet.Parse(args);
+            BeforeParse(_optionSet);
+            Extra = _optionSet.Parse(args);
             _context = Context.ReadFromFile(profile);
             _context.Apply(context);
 
@@ -70,7 +73,7 @@ namespace DocDB.Command
 
         public void PrintHelp()
         {
-            optionSet.WriteOptionDescriptions(Console.Out);
+            _optionSet.WriteOptionDescriptions(Console.Out);
         }
 
  

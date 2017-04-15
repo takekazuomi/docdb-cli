@@ -37,9 +37,6 @@ namespace DocDB
         [JsonIgnore]
         public int Verbose { get; set; }
 
-        [JsonIgnore]
-        public bool Help { get; set; }
-
         public Context()
         {
             ConnectionPolicy = new ConnectionPolicy
@@ -70,7 +67,6 @@ namespace DocDB
             DataCollectionName = context.DataCollectionName ?? DataCollectionName;
             // always overwrite
             Verbose = context.Verbose;
-            Help = context.Help;
         }
 
         public static Context ReadFromFile(string path = null)

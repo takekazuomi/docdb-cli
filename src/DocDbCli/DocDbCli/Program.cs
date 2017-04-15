@@ -68,7 +68,7 @@ namespace DocDbCli
         {
             // TODO fix here
             var queue = new Queue<string>(args);
-            var name = -queue.Count == 0 ? "help" : queue.Dequeue();
+            var name = -queue.Count == 0 ? "help" : (queue.Peek().StartsWith("-") ? "help" : queue.Dequeue());
             var verb = -queue.Count == 0 ? "nop" : (queue.Peek().StartsWith("-") ? "nop" : queue.Dequeue());
 
             var cmd = _commands.FirstOrDefault(lazy => lazy.Metadata.Name == name && lazy.Metadata.Verb == verb);
