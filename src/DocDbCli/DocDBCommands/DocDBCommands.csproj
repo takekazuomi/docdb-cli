@@ -56,14 +56,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Command\Collection\CollectionCreate.cs" />
+    <Compile Include="Command\CommandBase.cs" />
+    <Compile Include="Command\CommandDocBase.cs" />
     <Compile Include="Command\Connect.cs" />
     <Compile Include="Command\Collection\CollectionList.cs" />
-    <Compile Include="Command\Offer\OffersQuery.cs" />
+    <Compile Include="Command\Offer\OffersList.cs" />
     <Compile Include="Context.cs" />
     <Compile Include="Extentions.cs" />
     <Compile Include="ICommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Command\CommandBase.cs" />
     <Compile Include="Command\Help.cs" />
     <Compile Include="Command\Document\DocumentCreate.cs" />
     <Compile Include="Command\Document\DocumentQuery.cs" />

@@ -30,7 +30,7 @@ namespace DocDB.Command
     [ExportMetadata("Verb", "create")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
-    public class DocumentCreate : CommandBase
+    public class DocumentCreate : CommandDocBase
     {
         private string _jsonText;
 

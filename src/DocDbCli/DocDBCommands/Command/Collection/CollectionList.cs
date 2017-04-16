@@ -27,7 +27,7 @@ namespace DocDB.Command
     [ExportMetadata("Verb", "list")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
-    public class CollectionList : CommandBase
+    public class CollectionList : CommandDocBase
     {
         protected override Task RunAsync(DocumentClient client)
         {

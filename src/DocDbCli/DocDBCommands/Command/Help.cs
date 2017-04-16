@@ -25,9 +25,9 @@ namespace DocDB.Command
     [ExportMetadata("Verb", "nop")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
-    public class Help : CommandBase
+    public class Help : CommandBase, ICommand
     {
-        protected override Task RunAsync(DocumentClient client)
+        public Task RunAsync()
         {
             Console.WriteLine("help");
             return DoneTask;

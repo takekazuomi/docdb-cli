@@ -24,7 +24,7 @@ using Mono.Options;
 namespace DocDB.Command
 {
 
-    public abstract class CommandBase : ICommand
+    public abstract class CommandBase
     {
         protected Context _context;
         protected Context Context {
@@ -71,41 +71,10 @@ namespace DocDB.Command
         {
         }
 
-        protected abstract Task RunAsync(DocumentClient client);
-
+ 
         public void PrintHelp()
         {
             _optionSet.WriteOptionDescriptions(Console.Out);
-        }
-
- 
-        protected Database GetDatabaseIfExists(DocumentClient client, string databaseName)
-        {
-            return client.CreateDatabaseQuery().Where(d => d.Id == databaseName).AsEnumerable().FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Get the collection if it exists, null if it doesn't
-        /// </summary>
-        /// <returns>The requested collection</returns>
-        protected DocumentCollection GetCollectionIfExists(DocumentClient client, string databaseName, string collectionName)
-        {
-            if (GetDatabaseIfExists(client, databaseName) == null)
-            {
-                return null;
-            }
-
-            return client.CreateDocumentCollectionQuery(UriFactory.CreateDatabaseUri(databaseName)).Where(c => c.Id == collectionName).AsEnumerable().FirstOrDefault();
-        }
-
-        public Task RunAsync()
-        {
-            DocumentClient client;
-            using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
-            {
-                RunAsync(client).Wait();
-            }
-            return Task.FromResult<bool>(true);
         }
     }
 }

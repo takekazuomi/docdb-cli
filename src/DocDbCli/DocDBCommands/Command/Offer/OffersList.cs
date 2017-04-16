@@ -31,7 +31,7 @@ namespace DocDB.Command
     [ExportMetadata("Verb", "list")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
-    public class OffersList : CommandBase
+    public class OffersList : CommandDocBase
     {
         protected override async Task RunAsync(DocumentClient client)
         {

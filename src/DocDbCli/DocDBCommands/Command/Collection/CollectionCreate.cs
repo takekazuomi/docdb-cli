@@ -28,7 +28,7 @@ namespace DocDB.Command
     [ExportMetadata("Verb", "create")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
-    public class CollectionCreate : CommandBase
+    public class CollectionCreate : CommandDocBase
     {
         public string PartitionKey { get; set; }
         public string OfferType { get; set; }

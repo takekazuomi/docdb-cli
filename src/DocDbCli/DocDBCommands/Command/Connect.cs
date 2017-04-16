@@ -27,7 +27,7 @@ namespace DocDB.Command
     [ExportMetadata("Verb", "nop")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
-    public class Connect : CommandBase
+    public class Connect : CommandDocBase
     {
         protected override void CheckRequiredOption(Context contextBefore, Context contextAfter)
         {
