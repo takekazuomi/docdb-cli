@@ -27,27 +27,27 @@ namespace DocDB.Command
     [ExportMetadata("Verb", "list")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
-    public class CollectionList : CommandBase, ICommand
+    public class CollectionList : CommandBase
     {
-        public async Task RunAsync()
+        protected override Task RunAsync(DocumentClient client)
         {
-            DocumentClient client;
-            using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
+            if (GetDatabaseIfExists(client, Context.DatabaseName) != null)
             {
-                if (GetDatabaseIfExists(client, Context.DatabaseName) != null)
+                var databaseLink = UriFactory.CreateDatabaseUri(Context.DatabaseName);
+                var collection = client.CreateDocumentCollectionQuery(databaseLink, Context.FeedOptions);
+                foreach (var documentCollection in collection)
                 {
-                   var databaseLink = UriFactory.CreateDatabaseUri(Context.DatabaseName);
-                    var collection = client.CreateDocumentCollectionQuery(databaseLink, Context.FeedOptions);
-                    foreach (var documentCollection in collection)
-                    {
-                        Console.WriteLine("Id:{0}, ResourceId:{1}, ConflictsLink:{2}", documentCollection.Id, documentCollection.ResourceId, documentCollection.ConflictsLink);
-                    }
-                }
-                else
-                {
-                    Log.Warning("Not exist Database:{0}, Collection:{1}", Context.DatabaseName, Context.DataCollectionName);
+                    Console.WriteLine("Id:{0}, ResourceId:{1}, ConflictsLink:{2}", documentCollection.Id, documentCollection.ResourceId, documentCollection.ConflictsLink);
                 }
             }
+            else
+            {
+                Log.Warning("Not exist Database:{0}, Collection:{1}", Context.DatabaseName, Context.DataCollectionName);
+            }
+
+            // TODO
+            return Task.FromResult<bool>(true);
         }
     }
 }
+

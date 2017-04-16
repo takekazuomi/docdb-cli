@@ -30,7 +30,7 @@ namespace DocDB.Command
     [ExportMetadata("Verb", "create")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
-    public class DocumentCreate : CommandBase, ICommand
+    public class DocumentCreate : CommandBase
     {
         private string _jsonText;
 
@@ -54,31 +54,21 @@ namespace DocDB.Command
         }
 
 
-        public async Task RunAsync()
+        protected override async Task RunAsync(DocumentClient client)
         {
-            DocumentClient client;
-            using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
+            var collectionUri = UriFactory.CreateDocumentCollectionUri(Context.DatabaseName, Context.DataCollectionName);
+            // TODO Why cannot use json string direct?
+            var newDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonText);
+            var result = await client.CreateDocumentAsync(collectionUri, newDictionary, new RequestOptions());
+            if (Context.Verbose > 0)
             {
-                var collection = GetCollectionIfExists(client, Context.DatabaseName, Context.DataCollectionName);
-                if (collection == null)
-                {
-                    throw new ArgumentException(string.Format("Database {0}, Collection {1} doesn't exist", Context.DatabaseName, Context.DataCollectionName));
-                }
-
-                var collectionUri = UriFactory.CreateDocumentCollectionUri(Context.DatabaseName, Context.DataCollectionName);
-                // TODO Why cannot use json string direct?
-                var newDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonText);
-                var result = await client.CreateDocumentAsync(collectionUri, newDictionary, new RequestOptions());
-                if (Context.Verbose > 0)
-                {
-                    Console.WriteLine("RequestCharge: {0}", result.RequestCharge);
-                    Console.WriteLine(result.Resource);
-                }
-                if (Context.Verbose > 1)
-                {
-                    var msg = result.ResponseHeaders.ToJoinedString("\n\t", " : ");
-                    Console.WriteLine("ResponseHeaders:\n\t{0}", msg);
-                }
+                Console.WriteLine("RequestCharge: {0}", result.RequestCharge);
+                Console.WriteLine(result.Resource);
+            }
+            if (Context.Verbose > 1)
+            {
+                var msg = result.ResponseHeaders.ToJoinedString("\n\t", " : ");
+                Console.WriteLine("ResponseHeaders:\n\t{0}", msg);
             }
         }
     }

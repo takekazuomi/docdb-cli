@@ -31,7 +31,7 @@ namespace DocDB.Command
     [ExportMetadata("Verb", "query")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
-    public class DocumentQuery : CommandBase, ICommand
+    public class DocumentQuery : CommandBase
     {
         public string QueryText { get; set; }
 
@@ -51,33 +51,24 @@ namespace DocDB.Command
             if (msgs.Count > 0)
                 throw new InvalidOperationException("Missing required option " + string.Join(", ", msgs));
         }
-        public async Task RunAsync()
+        protected override async Task RunAsync(DocumentClient client)
         {
-            DocumentClient client;
-            using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
+            var collectionUri = UriFactory.CreateDocumentCollectionUri(Context.DatabaseName, Context.DataCollectionName);
+            var query = client.CreateDocumentQuery(collectionUri, QueryText, Context.FeedOptions).AsDocumentQuery();
+            while (query.HasMoreResults)
             {
-                var collection = GetCollectionIfExists(client, Context.DatabaseName, Context.DataCollectionName);
-                if (collection == null)
+                var result = await query.ExecuteNextAsync();
+                if (Context.Verbose > 0)
+                    Console.WriteLine("RequestCharge: {0}", result.RequestCharge);
+                if (Context.Verbose > 1)
                 {
-                    throw new ArgumentException(string.Format("Database {0}, Collection {1} doesn't exist", Context.DatabaseName, Context.DataCollectionName));
+                    var msg = result.ResponseHeaders.ToJoinedString("\n\t", " : ");
+                    Console.WriteLine("ResponseHeaders:\n\t{0}", msg);
                 }
-
-                var collectionUri = UriFactory.CreateDocumentCollectionUri(Context.DatabaseName, Context.DataCollectionName);
-                var query = client.CreateDocumentQuery(collectionUri, QueryText, Context.FeedOptions).AsDocumentQuery();
-                while (query.HasMoreResults)
-                {
-                    var result = await query.ExecuteNextAsync();
-                    if (Context.Verbose > 0)
-                        Console.WriteLine("RequestCharge: {0}", result.RequestCharge);
-                    if (Context.Verbose > 1)
-                    {
-                        var msg = result.ResponseHeaders.ToJoinedString("\n\t", " : ");
-                        Console.WriteLine("ResponseHeaders:\n\t{0}", msg);
-                    }
-                    Console.WriteLine(JsonConvert.SerializeObject(result.AsEnumerable()));
-                }
+                Console.WriteLine(JsonConvert.SerializeObject(result.AsEnumerable()));
             }
         }
     }
 }
+
 

@@ -28,15 +28,17 @@ namespace DocDB.Command
     [ExportMetadata("Verb", "create")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
-    public class CollectionCreate : CommandBase, ICommand
+    public class CollectionCreate : CommandBase
     {
         public string PartitionKey { get; set; }
-        public int? CollectionThroughput { get; set; }
+        public string OfferType { get; set; }
+        public int? OfferThroughput { get; set; }
 
         protected override void BeforeParse(OptionSet optionset)
         {
             optionset.Add("p|partitionKey=", v => PartitionKey = v);
-            optionset.Add("t|throughput=", v => CollectionThroughput = Int32.Parse(v));
+            optionset.Add("t|throughput=", v => OfferThroughput = Int32.Parse(v));
+            optionset.Add("o|offerType=", v => OfferType = v);
             base.BeforeParse(optionset);
         }
 
@@ -49,28 +51,29 @@ namespace DocDB.Command
             }
         }
 
-        public async Task RunAsync()
+        protected override async Task RunAsync(DocumentClient client)
         {
-            DocumentClient client;
-            using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
+            if (GetDatabaseIfExists(client, Context.DatabaseName) != null)
             {
-                if (GetDatabaseIfExists(client, Context.DatabaseName) != null)
+                var collection = new DocumentCollection
                 {
-                    var result = await client.CreateDocumentCollectionAsync(
-                        UriFactory.CreateDatabaseUri(Context.DatabaseName),
-                        new DocumentCollection {Id = Context.DataCollectionName},
-                        new RequestOptions {OfferThroughput = CollectionThroughput});
-                    if (Context.Verbose > 1)
-                    {
-                        var msg = result.ResponseHeaders.ToJoinedString("\n\t", " : ");
-                        Console.WriteLine("ResponseHeaders:\n\t{0}", msg);
-                    }
-                }
-                else
+                    Id = Context.DataCollectionName
+                };
+                collection.PartitionKey.Paths.Add(PartitionKey);
+                var result = await client.CreateDocumentCollectionAsync(
+                    UriFactory.CreateDatabaseUri(Context.DatabaseName),
+                    collection,
+                    new RequestOptions { OfferThroughput = OfferThroughput });
+                if (Context.Verbose > 1)
                 {
-                    Console.Error.WriteLine("Not exist Database:{0}", Context.DatabaseName);
-                    Log.Error("Not exist Database:{0}", Context.DatabaseName);
+                    var msg = result.ResponseHeaders.ToJoinedString("\n\t", " : ");
+                    Console.WriteLine("ResponseHeaders:\n\t{0}", msg);
                 }
+            }
+            else
+            {
+                Console.Error.WriteLine("Not exist Database:{0}", Context.DatabaseName);
+                Log.Error("Not exist Database:{0}", Context.DatabaseName);
             }
         }
     }

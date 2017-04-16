@@ -27,7 +27,7 @@ namespace DocDB.Command
     [ExportMetadata("Verb", "nop")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
-    public class Connect : CommandBase, ICommand
+    public class Connect : CommandBase
     {
         protected override void CheckRequiredOption(Context contextBefore, Context contextAfter)
         {
@@ -43,14 +43,10 @@ namespace DocDB.Command
                 throw new InvalidOperationException("Missing required option " + string.Join(", ", msgs));
         }
 
-        public async Task RunAsync()
+        protected override async Task RunAsync(DocumentClient client)
         {
-            DocumentClient client;
-            using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
-            {
-                await client.OpenAsync();
-                Context.WriteToFile();
-            }
+            await client.OpenAsync();
+            Context.WriteToFile();
         }
     }
 }

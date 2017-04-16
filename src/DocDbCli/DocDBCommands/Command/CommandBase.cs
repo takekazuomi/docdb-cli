@@ -24,7 +24,7 @@ using Mono.Options;
 namespace DocDB.Command
 {
 
-    public class CommandBase
+    public abstract class CommandBase : ICommand
     {
         protected Context _context;
         protected Context Context {
@@ -71,6 +71,8 @@ namespace DocDB.Command
         {
         }
 
+        protected abstract Task RunAsync(DocumentClient client);
+
         public void PrintHelp()
         {
             _optionSet.WriteOptionDescriptions(Console.Out);
@@ -96,6 +98,14 @@ namespace DocDB.Command
             return client.CreateDocumentCollectionQuery(UriFactory.CreateDatabaseUri(databaseName)).Where(c => c.Id == collectionName).AsEnumerable().FirstOrDefault();
         }
 
+        public Task RunAsync()
+        {
+            DocumentClient client;
+            using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
+            {
+                RunAsync(client).Wait();
+            }
+            return Task.FromResult<bool>(true);
+        }
     }
-
 }

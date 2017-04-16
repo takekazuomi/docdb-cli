@@ -58,6 +58,7 @@
     <Compile Include="Command\Collection\CollectionCreate.cs" />
     <Compile Include="Command\Connect.cs" />
     <Compile Include="Command\Collection\CollectionList.cs" />
+    <Compile Include="Command\Offer\OffersQuery.cs" />
     <Compile Include="Context.cs" />
     <Compile Include="Extentions.cs" />
     <Compile Include="ICommand.cs" />
