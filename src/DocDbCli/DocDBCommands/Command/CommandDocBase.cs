@@ -42,9 +42,9 @@ namespace DocDB.Command
         /// Get the collection if it exists, null if it doesn't
         /// </summary>
         /// <returns>The requested collection</returns>
-        protected DocumentCollection GetCollectionIfExists(DocumentClient client, string databaseName, string collectionName)
+        protected async Task<DocumentCollection> GetCollectionIfExists(DocumentClient client, string databaseName, string collectionName)
         {
-            if (GetDatabaseIfExists(client, databaseName) == null)
+            if ((await GetDatabaseIfExists(client, databaseName)) == null)
             {
                 return null;
             }
@@ -57,6 +57,11 @@ namespace DocDB.Command
             DocumentClient client;
             using (client = new DocumentClient(new Uri(Context.EndPoint), Context.AuthorizationKey, Context.ConnectionPolicy))
             {
+                if (Context.Wait)
+                {
+                    Console.Error.Write("press enter to send request. ");
+                    Console.ReadLine();
+                }
                 RunAsync(client).Wait();
             }
             return Task.FromResult<bool>(true);

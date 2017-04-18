@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.0
+VisualStudioVersion = 15.0.26403.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocDbCli", "DocDbCli\DocDbCli.csproj", "{9E36479C-2355-4B61-9FFA-5A3ADDDC0279}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocDBCommands", "DocDBCommands\DocDBCommands.csproj", "{3D4C956D-A85D-410F-9712-C1B725718FCA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EtwTail", "EtwTail\EtwTail.csproj", "{34D878A5-4ED4-4DFB-A950-851968024745}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{3D4C956D-A85D-410F-9712-C1B725718FCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D4C956D-A85D-410F-9712-C1B725718FCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D4C956D-A85D-410F-9712-C1B725718FCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34D878A5-4ED4-4DFB-A950-851968024745}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34D878A5-4ED4-4DFB-A950-851968024745}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34D878A5-4ED4-4DFB-A950-851968024745}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34D878A5-4ED4-4DFB-A950-851968024745}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

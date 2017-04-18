@@ -51,7 +51,9 @@ namespace DocDB.Command
                 {"c|DataCollectionName=", v => context.DataCollectionName = v},
                 {"v|verbose", v => ++context.Verbose},
                 {"F|profile", v => profile=v},
+                {"wait", v => context.Wait = v != null},
                 {"h|?|help", v => help = v != null},
+
             };
 
             // call back here

@@ -33,16 +33,16 @@ namespace DocDB
         public string DataCollectionName { get; set; }
         public FeedOptions FeedOptions { get; set; }
         public ConnectionPolicy ConnectionPolicy { get; set; }
+        public bool Wait { get; set; } = false;
 
         [JsonIgnore]
         public int Verbose { get; set; }
-
         public Context()
         {
             ConnectionPolicy = new ConnectionPolicy
             {
                 ConnectionMode = ConnectionMode.Direct,
-                ConnectionProtocol = Protocol.Tcp,
+                ConnectionProtocol = Protocol.Https,
                 RequestTimeout = new TimeSpan(1, 0, 0),
                 MaxConnectionLimit = 1000,
                 RetryOptions = new RetryOptions
@@ -51,7 +51,14 @@ namespace DocDB
                     MaxRetryWaitTimeInSeconds = 60
                 }
             };
-            FeedOptions = new FeedOptions {EnableCrossPartitionQuery = true};
+            FeedOptions = new FeedOptions {
+                EnableCrossPartitionQuery = true,
+//                EnableScanInQuery = false,
+//                MaxBufferedItemCount = 100,
+//                MaxDegreeOfParallelism = 25,
+//                MaxItemCount = -1,
+//                SessionToken = 
+            };
         }
 
         private static string GetDotFilePath()
@@ -66,6 +73,7 @@ namespace DocDB
             DatabaseName = context.DatabaseName ?? DatabaseName;
             DataCollectionName = context.DataCollectionName ?? DataCollectionName;
             // always overwrite
+            Wait = context.Wait;
             Verbose = context.Verbose;
         }
 

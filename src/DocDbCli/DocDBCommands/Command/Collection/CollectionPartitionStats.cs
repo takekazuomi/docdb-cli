@@ -12,6 +12,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * 
+ * 
+ * https://github.com/Azure/azure-documentdb-dotnet/tree/master/samples/partition-stats
  */
 using System;
 using System.Collections.Generic;
@@ -24,22 +27,18 @@ namespace DocDB.Command
 {
     [Export(typeof(ICommand))]
     [ExportMetadata("Name", "collection")]
-    [ExportMetadata("Verb", "list")]
+    [ExportMetadata("Verb", "partitionstats")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
 
-    public class CollectionList : CommandDocBase
+    public class CollectionPartitionStats : CommandDocBase
     {
-        protected override Task RunAsync(DocumentClient client)
+        protected override async Task RunAsync(DocumentClient client)
         {
-            var databaseLink = UriFactory.CreateDatabaseUri(Context.DatabaseName);
-            var collection = client.CreateDocumentCollectionQuery(databaseLink, Context.FeedOptions);
-            foreach (var documentCollection in collection)
-            {
-                Console.WriteLine("Id:{0}, ResourceId:{1}, ConflictsLink:{2}", documentCollection.Id, documentCollection.ResourceId, documentCollection.ConflictsLink);
-            }
+            var collectionLink = UriFactory.CreateDocumentCollectionUri(Context.DatabaseName, Context.DataCollectionName);
 
-            // TODO
-            return Task.FromResult<bool>(true);
+            var collection = await client.ReadDocumentCollectionAsync(collectionLink, new RequestOptions { PopulateQuotaInfo = true });
+
+
         }
     }
 }
