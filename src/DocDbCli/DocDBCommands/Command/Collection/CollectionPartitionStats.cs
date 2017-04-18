@@ -22,6 +22,7 @@ using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents.Client;
 using Serilog;
+using Microsoft.Azure.Documents;
 
 namespace DocDB.Command
 {
@@ -37,8 +38,67 @@ namespace DocDB.Command
             var collectionLink = UriFactory.CreateDocumentCollectionUri(Context.DatabaseName, Context.DataCollectionName);
 
             var collection = await client.ReadDocumentCollectionAsync(collectionLink, new RequestOptions { PopulateQuotaInfo = true });
+            var partitionKeyRanges = await GetPartitionKeyRanges(client, collectionLink);
 
+            PrintSummaryStats(collection, partitionKeyRanges);
 
+            if (partitionKeyRanges.Count > 1)
+            {
+//                await PrintPerPartitionStats(collection, partitionKeyRanges);
+            }
+        }
+
+        private async Task<List<PartitionKeyRange>> GetPartitionKeyRanges(DocumentClient client, Uri collectionLink)
+        {
+            string pkRangesResponseContinuation = null;
+            var partitionKeyRanges = new List<PartitionKeyRange>();
+
+            do
+            {
+                var response = await client.ReadPartitionKeyRangeFeedAsync(collectionLink,
+                    new FeedOptions { RequestContinuation = pkRangesResponseContinuation });
+
+                partitionKeyRanges.AddRange(response);
+                pkRangesResponseContinuation = response.ResponseContinuation;
+            }
+            while (pkRangesResponseContinuation != null);
+
+            return partitionKeyRanges;
+        }
+
+        private static void PrintSummaryStats(ResourceResponse<DocumentCollection> collection, List<PartitionKeyRange> partitionKeyRanges)
+        {
+            
+            Console.WriteLine("Summary: {0}", collection.CurrentResourceQuotaUsage);
+            Console.WriteLine("\tpartitions: {0}", partitionKeyRanges.Count);
+
+            string[] keyValuePairs = collection.CurrentResourceQuotaUsage.Split(';');
+
+            foreach (string kvp in keyValuePairs)
+            {
+                string metricName = kvp.Split('=')[0];
+                string metricValue = kvp.Split('=')[1];
+
+                switch (metricName)
+                {
+                    case "collectionSize":
+                        break;
+                    case "documentsSize":
+                        Console.WriteLine("\t{0}: {1} GB", metricName, Math.Round(int.Parse(metricValue) / (1024 * 1024.0), 3));
+                        break;
+                    case "documentsCount":
+                        Console.WriteLine("\t{0}: {1:n0}", metricName, int.Parse(metricValue));
+                        break;
+                    case "storedProcedures":
+                    case "triggers":
+                    case "functions":
+                        break;
+                    default:
+                        Console.WriteLine("\t{0}: {1}", metricName, metricValue);
+                        break;
+                }
+            }
+            Console.WriteLine();
         }
     }
 }
