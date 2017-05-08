@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents.Client;
 using Serilog;
@@ -38,6 +39,10 @@ namespace DocDB.Command
             var collectionLink = UriFactory.CreateDocumentCollectionUri(Context.DatabaseName, Context.DataCollectionName);
 
             var collection = await client.ReadDocumentCollectionAsync(collectionLink, new RequestOptions { PopulateQuotaInfo = true });
+
+            if (Context.Verbose > 0)
+                Console.WriteLine(string.Join("\n", collection.DumpValue()));
+
             var partitionKeyRanges = await GetPartitionKeyRanges(client, collectionLink);
 
             PrintSummaryStats(collection, partitionKeyRanges);

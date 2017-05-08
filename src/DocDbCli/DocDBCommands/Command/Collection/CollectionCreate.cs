@@ -53,27 +53,23 @@ namespace DocDB.Command
 
         protected override async Task RunAsync(DocumentClient client)
         {
-            if (GetDatabaseIfExists(client, Context.DatabaseName) != null)
+            var database = await client.CreateDatabaseIfNotExistsAsync(new Database {Id = Context.DatabaseName});
+
+            var collection = new DocumentCollection {Id = Context.DataCollectionName};
+            collection.PartitionKey.Paths.Add(PartitionKey);
+
+            var databaseUri = UriFactory.CreateDatabaseUri(Context.DatabaseName);
+
+            Console.WriteLine("{0}, {1}", databaseUri, database.Resource.SelfLink);
+            var result = await client.CreateDocumentCollectionAsync(
+                databaseUri,
+                collection,
+                new RequestOptions {OfferThroughput = OfferThroughput});
+
+            if (Context.Verbose > 1)
             {
-                var collection = new DocumentCollection
-                {
-                    Id = Context.DataCollectionName
-                };
-                collection.PartitionKey.Paths.Add(PartitionKey);
-                var result = await client.CreateDocumentCollectionAsync(
-                    UriFactory.CreateDatabaseUri(Context.DatabaseName),
-                    collection,
-                    new RequestOptions { OfferThroughput = OfferThroughput });
-                if (Context.Verbose > 1)
-                {
-                    var msg = result.ResponseHeaders.ToJoinedString("\n\t", " : ");
-                    Console.WriteLine("ResponseHeaders:\n\t{0}", msg);
-                }
-            }
-            else
-            {
-                Console.Error.WriteLine("Not exist Database:{0}", Context.DatabaseName);
-                Log.Error("Not exist Database:{0}", Context.DatabaseName);
+                var msg = result.ResponseHeaders.ToJoinedString("\n\t", " : ");
+                Console.WriteLine("ResponseHeaders:\n\t{0}", msg);
             }
         }
     }

@@ -15,8 +15,11 @@
  */
 using Microsoft.Azure.Documents.Client;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Reflection;
+using Microsoft.Azure.Documents;
 
 namespace DocDB
 {
@@ -29,6 +32,22 @@ namespace DocDB
         public static string Dump<T>(this FeedResponse<T> feed)
         {
             return feed.ResponseHeaders.ToJoinedString("\n\t", " : ");
+        }
+
+        public static string[] DumpValue<T>(this ResourceResponse<T> response) where T : Resource, new()
+        {
+            var result = Enumerable.Empty<string>();
+            if (response.ResponseHeaders != null)
+            {
+                result = response.ResponseHeaders.AllKeys.Select(
+                    key => string.Format("\t{0}={1}", key, response.ResponseHeaders[key]));
+            }
+
+            var properties = response.GetType()
+                .GetProperties(BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.Instance)
+                .Select(info => string.Format("{0}={1}", info.Name, info.GetValue(response)?.ToString()));
+
+            return properties.Concat(result).ToArray();
         }
     }
 }

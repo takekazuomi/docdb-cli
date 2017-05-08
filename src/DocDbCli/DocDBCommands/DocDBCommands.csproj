@@ -61,6 +61,7 @@
     <Compile Include="Command\CommandDocBase.cs" />
     <Compile Include="Command\Connect.cs" />
     <Compile Include="Command\Collection\CollectionList.cs" />
+    <Compile Include="Command\Database\DatabaseCreate.cs" />
     <Compile Include="Command\Offer\OffersList.cs" />
     <Compile Include="Context.cs" />
     <Compile Include="Extentions.cs" />
@@ -77,7 +78,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Command\Database\" />
     <Folder Include="Command\StoredProcedures\" />
     <Folder Include="Command\UserDefinedFunctions\" />
   </ItemGroup>

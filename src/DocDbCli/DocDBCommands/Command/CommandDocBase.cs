@@ -19,7 +19,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
-using Mono.Options;
 
 namespace DocDB.Command
 {
@@ -28,14 +27,10 @@ namespace DocDB.Command
     {
         protected abstract Task RunAsync(DocumentClient client);
 
-        protected async Task<Database> GetDatabaseIfExists(DocumentClient client, string databaseName)
+        protected async Task<Microsoft.Azure.Documents.Database> GetDatabaseIfExists(DocumentClient client, string databaseName)
         {
-            var feed = await client.ReadDatabaseFeedAsync(Context.FeedOptions);
-            if (Context.Verbose > 1) {
-                Console.WriteLine("FeedResponse:{0}", feed.Dump());
-            }
-            return feed.Where(f => f.Id == databaseName).FirstOrDefault();
-            //return client.CreateDatabaseQuery().Where(d => d.Id == databaseName).AsEnumerable().FirstOrDefault();
+            var database = await client.CreateDatabaseIfNotExistsAsync(new Database {Id = databaseName});
+            return database;
         }
 
         /// <summary>
@@ -44,12 +39,9 @@ namespace DocDB.Command
         /// <returns>The requested collection</returns>
         protected async Task<DocumentCollection> GetCollectionIfExists(DocumentClient client, string databaseName, string collectionName)
         {
-            if ((await GetDatabaseIfExists(client, databaseName)) == null)
-            {
-                return null;
-            }
-
-            return client.CreateDocumentCollectionQuery(UriFactory.CreateDatabaseUri(databaseName)).Where(c => c.Id == collectionName).AsEnumerable().FirstOrDefault();
+            var databaseUri = UriFactory.CreateDatabaseUri(databaseName);
+            var collection = await client.CreateDocumentCollectionIfNotExistsAsync(databaseUri, new DocumentCollection { Id = collectionName });
+            return collection;
         }
 
         public Task RunAsync()

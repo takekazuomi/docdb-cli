@@ -15,6 +15,7 @@
  */
 using System;
 using System.IO;
+using System.Reflection;
 using Microsoft.Azure.Documents.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -53,12 +54,16 @@ namespace DocDB
             };
             FeedOptions = new FeedOptions {
                 EnableCrossPartitionQuery = true,
+                
 //                EnableScanInQuery = false,
 //                MaxBufferedItemCount = 100,
 //                MaxDegreeOfParallelism = 25,
 //                MaxItemCount = -1,
 //                SessionToken = 
             };
+
+            var pi = FeedOptions.GetType().GetProperty("EmitVerboseTracesInQuery", BindingFlags.Public| BindingFlags.NonPublic | BindingFlags.SetProperty);
+            if (pi != null) pi.SetValue(FeedOptions, true);
         }
 
         private static string GetDotFilePath()
@@ -110,6 +115,8 @@ namespace DocDB
                         Converters = new JsonConverter[] {new StringEnumConverter()}
                     });
                 File.WriteAllText(path, json);
+                if (Verbose > 0)
+                    Console.Error.WriteLine("Done write to {0}", path);
             }
             catch (Exception e)
             {
