@@ -35,15 +35,27 @@ namespace DocDB.Command
     {
         protected override async Task RunAsync(DocumentClient client)
         {
-            var feed = await client.ReadOffersFeedAsync(Context.FeedOptions);
-            if (Context.Verbose > 0)
-                Console.WriteLine("RequestCharge: {0}", feed.RequestCharge);
-            if (Context.Verbose > 1)
+            string continuation = string.Empty;
+            do
             {
-                var msg = feed.ResponseHeaders.ToJoinedString("\n\t", " : ");
-                Console.WriteLine("ResponseHeaders:\n\t{0}", msg);
-            }
-            Console.WriteLine(JsonConvert.SerializeObject(feed.AsEnumerable()));
+                var feed = await client.ReadOffersFeedAsync(new FeedOptions
+                {
+                    MaxItemCount = 10,
+                    RequestContinuation = continuation
+                });
+
+                if (Context.Verbose > 0)
+                    Console.WriteLine("RequestCharge: {0}", feed.RequestCharge);
+                if (Context.Verbose > 1)
+                {
+                    var msg = feed.ResponseHeaders.ToJoinedString("\n\t", " : ");
+                    Console.WriteLine("ResponseHeaders:\n\t{0}", msg);
+                }
+                Console.WriteLine(JsonConvert.SerializeObject(feed.AsEnumerable()));
+
+                continuation = feed.ResponseContinuation;
+            } while (!string.IsNullOrEmpty(continuation));
+
         }
     }
 }
